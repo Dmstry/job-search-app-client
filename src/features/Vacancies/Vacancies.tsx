@@ -1,6 +1,9 @@
-import { Vacancy } from "../../reducers/vacancies";
-import { connect } from "react-redux";
-import { RootState } from "../../store";
+import { Vacancy } from '../../reducers/vacancies';
+import { connect } from 'react-redux';
+import { RootState } from '../../store';
+import { VacancyCard } from './VacancyCard';
+
+import './Vacancies.css';
 
 interface VacanciesProps {
   vacancies: Vacancy[];
@@ -8,27 +11,28 @@ interface VacanciesProps {
 
 export function Vacancies({ vacancies }: VacanciesProps) {
   return (
-    <div>
-      <ul>
+    <section>
+      <div className='Vacancies-list'>
         {vacancies.map((v) => (
-          <li key={v.id}>
-            <h3>{v.title}</h3>
-            <p>{v.description}</p>
-            <p>{v.location}</p>
-            <p>{v.date}</p>
-            <p>{v.company}</p>
-            <p>{v.salary}</p>
-            <p>{v.tags}</p>
-          </li>
+          <VacancyCard
+            key={v.id}
+            id={v.id}
+            title={v.title}
+            description={v.description}
+            location={v.location}
+            date={v.date}
+            company={v.company}
+            salary={v.salary}
+            tags={v.tags} />
         ))}
-      </ul>
-    </div>
+      </div>
+    </section>
   );
 }
 
 const mapStateToProps = (state: RootState) => ({
   vacancies: state.vacancies.top,
-})
+});
 
 const connector = connect(mapStateToProps);
 
