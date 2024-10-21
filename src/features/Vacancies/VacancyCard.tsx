@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
-
+import styles from "./VacancyCard.module.scss";
+import logo from "../../logo.svg"; // Імпортуємо логотип React як заглушку
 
 interface VacancyCardProps {
   id: number;
@@ -8,8 +9,10 @@ interface VacancyCardProps {
   location: string;
   date: string;
   company: string;
-  salary: number;
+  salary: string;
   tags: string[];
+  employmentType: string;
+  remoteFriendly: boolean;
 }
 
 export function VacancyCard({
@@ -21,16 +24,20 @@ export function VacancyCard({
   company,
   salary,
   tags,
+  employmentType,
+  remoteFriendly,
 }: VacancyCardProps) {
   return (
-    <div className="Vacancies-card">
-      <Link to={`/vacancies/${id}`}>{title}</Link>
-      <div className="Vacancies-card-desc">{description}</div>
-      <div>{location}</div>
-      <div>{date}</div>
-      <div>{company}</div>
-      <div className="Vacansies-card-salary">{salary}</div>
-      <div>{tags}</div>
+    <div className={styles.card}>
+      <img src={logo} alt="Company Logo" className={styles.logo} />
+      <Link to={`/vacancies/${id}`} className={styles.title}>{title}</Link>
+      <div className={styles.company}><strong>Компанія:</strong> {company}</div>
+      <div className={styles.location}><strong>Місто:</strong> {location} {remoteFriendly && "| Remote Friendly"}</div>
+      <div className={styles.salary}><strong>Заробітна плата:</strong> {salary}</div>
+      <div className={styles.employmentType}><strong>Тип зайнятості:</strong> {employmentType}</div>
+      <div className={styles.date}><strong>Дата публікації:</strong> {date}</div>
+      <div className={styles.description}><strong>Опис:</strong> {description}</div>
+      <div className={styles.tags}><strong>Навички:</strong> {tags.join(', ')}</div>
     </div>
   );
 }

@@ -2,8 +2,7 @@ import { Vacancy } from '../../reducers/vacancies';
 import { connect } from 'react-redux';
 import { RootState } from '../../store';
 import { VacancyCard } from './VacancyCard';
-
-import './Vacancies.css';
+import styles from './Vacancies.module.scss';
 
 interface VacanciesProps {
   vacancies: Vacancy[];
@@ -12,7 +11,7 @@ interface VacanciesProps {
 export function Vacancies({ vacancies }: VacanciesProps) {
   return (
     <section>
-      <div className='Vacancies-list'>
+      <div className={styles.list}>
         {vacancies.map((v) => (
           <VacancyCard
             key={v.id}
@@ -23,7 +22,9 @@ export function Vacancies({ vacancies }: VacanciesProps) {
             date={v.date}
             company={v.company}
             salary={v.salary}
-            tags={v.tags} />
+            tags={v.tags}
+            employmentType={v.employmentType}
+            remoteFriendly={v.remoteFriendly} />
         ))}
       </div>
     </section>
