@@ -1,21 +1,32 @@
-import { Vacancy } from '../../reducers/vacancies';
-import { connect } from 'react-redux';
-import { RootState } from '../../store';
+import { useEffect } from 'react';
+import { useAppDispatch, useAppSelector } from '../../hooks';
+import { fetchVacancies } from '../../features/Vacancies/vacanciesSlice';
 import { VacancyCard } from './VacancyCard';
-import styles from './Vacancies.module.scss';
+import "./Vacancies.module.scss";
 
-interface VacanciesProps {
-  vacancies: Vacancy[];
-}
+export function Vacancies() {
+  const dispatch = useAppDispatch();
+  const { vacancies, loading, error } = useAppSelector((state) => state.vacancies);
 
-export function Vacancies({ vacancies }: VacanciesProps) {
+  useEffect(() => {
+    dispatch(fetchVacancies());
+  }, [dispatch]);
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (error) {
+    return <div>Error: {error}</div>;
+  }
+
   return (
     <section>
-      <div className={styles.list}>
+      <div className="Vacancies-list">
         {vacancies.map((v) => (
           <VacancyCard
-            key={v.id}
-            id={v.id}
+            key={v._id}
+            id={v._id}
             title={v.title}
             description={v.description}
             location={v.location}
@@ -24,17 +35,10 @@ export function Vacancies({ vacancies }: VacanciesProps) {
             salary={v.salary}
             tags={v.tags}
             employmentType={v.employmentType}
-            remoteFriendly={v.remoteFriendly} />
+            remoteFriendly={v.remoteFriendly}
+          />
         ))}
       </div>
     </section>
   );
 }
-
-const mapStateToProps = (state: RootState) => ({
-  vacancies: state.vacancies.top,
-});
-
-const connector = connect(mapStateToProps);
-
-export default connector(Vacancies);

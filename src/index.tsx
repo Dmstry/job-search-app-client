@@ -5,9 +5,9 @@ import App from './App';
 import reportWebVitals from './reportWebVitals';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import { About } from './features/About/About';
-import Vacancies from './features/Vacancies/Vacancies';
+import { Vacancies } from './features/Vacancies/Vacancies';
 import { Provider } from 'react-redux';
-import store from './store';
+import { store } from './store';
 import { Resumes } from './features/Resumes/Resumes';
 
 const router = createBrowserRouter([

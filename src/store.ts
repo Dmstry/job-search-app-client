@@ -1,9 +1,12 @@
-import { createStore } from 'redux';
+// store.ts
+import { configureStore } from '@reduxjs/toolkit';
+import vacanciesReducer from './features/Vacancies/vacanciesSlice';
 
-import rootReducer from './reducers';
-
-const store = createStore(rootReducer);
+export const store = configureStore({
+  reducer: {
+    vacancies: vacanciesReducer,
+  },
+});
 
 export type RootState = ReturnType<typeof store.getState>;
-
-export default store;
+export type AppDispatch = typeof store.dispatch;
