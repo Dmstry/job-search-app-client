@@ -1,6 +1,8 @@
-import { Link } from "react-router-dom";
-import styles from "./VacancyCard.module.scss";
-import logo from "../../logo.svg"; // Імпортуємо логотип React як заглушку
+import { Link } from 'react-router-dom';
+import logo from '../../logo.svg'; // Імпортуємо логотип React як заглушку
+import { Box, Button, Card, CardActions, CardContent, Typography } from '@mui/material';
+import IconButton from '@mui/material/IconButton';
+import WorkIcon from '@mui/icons-material/Work';
 
 interface VacancyCardProps {
   id: string;
@@ -28,24 +30,51 @@ export function VacancyCard({
   remoteFriendly,
 }: VacancyCardProps) {
   // Форматування дати у дд-мм-рррр
-  const formattedDate = new Date(date).toLocaleDateString("uk-UA", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
+  const formattedDate = new Date(date).toLocaleDateString('uk-UA', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
   });
   return (
-    <div className={styles.card}>
-      <img src={logo} alt="Company Logo" className={styles.logo} />
-      <Link to={`/vacancies/${id}`} className={styles.title}>{title}</Link>
-      <div className={styles.company}><strong>Компанія:</strong> {company}</div>
-      <div className={styles.location}><strong>Місто:</strong> {location} {remoteFriendly && "| Remote Friendly"}</div>
-      <div className={styles.salary}><strong>Заробітна плата:</strong> {salary}</div>
-      <div className={styles.employmentType}><strong>Тип зайнятості:</strong> {employmentType}</div>
-      <div className={styles.date}><strong>Дата публікації:</strong> {formattedDate}</div>
-      <div className={styles.description}><strong>Опис:</strong> {description}</div>
-      <div className={styles.tags}>
-        {/* Перевіряємо, чи tags є масивом перед використанням */}
-        {Array.isArray(tags) ? tags.join(", ") : ""}<strong>Навички:</strong> {tags.join(', ')}</div>
-    </div>
+    <Card sx={{ maxWidth: 400, margin: "1rem" }}>
+      <CardContent>
+        <Box display="flex" alignItems="center">
+          <img src={logo} alt="Company Logo" style={{ width: 40, marginRight: 10 }} />
+          <Typography variant="h5" component="div" sx={{ flexGrow: 1 }}>
+            {title}
+          </Typography>
+          <IconButton>
+            <WorkIcon color="primary" />
+          </IconButton>
+        </Box>
+        <Typography variant="body2" color="text.secondary" sx={{ marginTop: 1 }}>
+          {company} | {location}
+          {remoteFriendly && " | Remote Friendly"}
+        </Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ marginTop: 1 }}>
+          Заробітна Плата: {salary}
+        </Typography>
+        <Typography variant="body2" color="text.secondary">
+          Тип Зайнятості: {employmentType}
+        </Typography>
+        <Typography variant="body2" color="text.primary" sx={{ marginTop: 2 }}>
+          {description}
+        </Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ marginTop: 2 }}>
+          Теги: {tags.join(", ")}
+        </Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ marginTop: 2 }}>
+          Дата: {formattedDate}
+        </Typography>
+      </CardContent>
+      <CardActions>
+        <Button size="small" component={Link} to={`/vacancies/${id}`}>
+          Детальніше
+        </Button>
+        <Button size="small" color="primary">
+          Зберегти
+        </Button>
+      </CardActions>
+    </Card>
   );
 }
