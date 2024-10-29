@@ -1,18 +1,24 @@
-// features/vacancies/vacanciesSlice.ts
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import axios from 'axios';
 
 export interface Vacancy {
+  title: any;
+  location: any;
+  employer: any;
   _id: string;
-  title: string;
-  description: string;
-  location: string;
-  date: string;
-  company: string;
-  salary: string;
-  tags?: string[];
+  titleDetails: {
+    shortName: string;
+  };
+  locationDetails: {
+    locality: string;
+  };
+  employerDetails: {
+    shortName: string;
+  };
   employmentType: string;
-  remoteFriendly: boolean;
+  salary: number;
+  postedDate: string;
+  responsibilities: string;
 }
 
 interface VacanciesState {
@@ -27,9 +33,9 @@ const initialState: VacanciesState = {
   error: null,
 };
 
-// Asynchronous thunk to fetch vacancies
-export const fetchVacancies = createAsyncThunk('vacancies/fetchVacancies', async () => {
-  const response = await axios.get('http://localhost:8001/api/vacancies');
+// Асинхронний thunk для отримання вакансій з пагінацією
+export const fetchVacancies = createAsyncThunk('vacancies/fetchVacancies', async (page: number) => {
+  const response = await axios.get(`http://localhost:8001/api/vacancies/paginated?page=${page}&limit=18`);
   return response.data;
 });
 
@@ -45,7 +51,7 @@ const vacanciesSlice = createSlice({
       })
       .addCase(fetchVacancies.fulfilled, (state, action: PayloadAction<Vacancy[]>) => {
         state.loading = false;
-        state.vacancies = action.payload;
+        state.vacancies = [...state.vacancies, ...action.payload];
       })
       .addCase(fetchVacancies.rejected, (state, action) => {
         state.loading = false;

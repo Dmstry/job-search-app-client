@@ -1,78 +1,48 @@
-import { Link } from 'react-router-dom';
-import logo from '../../logo.svg'; // Імпортуємо логотип React як заглушку
-import { Box, Button, Card, CardActions, CardContent, Typography } from '@mui/material';
-import IconButton from '@mui/material/IconButton';
-import WorkIcon from '@mui/icons-material/Work';
+import { Button, Card, CardActions, CardContent, CardMedia, Typography } from "@mui/material";
+import { Link as RouterLink } from "react-router-dom";
+import logo from '../../logo.svg';
 
-interface VacancyCardProps {
+interface Props {
   id: string;
   title: string;
-  description: string;
   location: string;
-  date: string;
-  company: string;
-  salary: string;
-  tags?: string[];
+  employer: string;
   employmentType: string;
-  remoteFriendly: boolean;
+  salary: number;
+  postedDate: string;
+  responsibilities: string;
 }
 
-export function VacancyCard({
-  id,
-  title,
-  description,
-  location,
-  date,
-  company,
-  salary,
-  tags = [],
-  employmentType,
-  remoteFriendly,
-}: VacancyCardProps) {
-  // Форматування дати у дд-мм-рррр
-  const formattedDate = new Date(date).toLocaleDateString('uk-UA', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-  });
+export function VacancyCard({ id, title, location, employer, employmentType, salary, postedDate, responsibilities }: Props) {
   return (
-    <Card sx={{ maxWidth: 400, margin: "1rem" }}>
-      <CardContent>
-        <Box display="flex" alignItems="center">
-          <img src={logo} alt="Company Logo" style={{ width: 40, marginRight: 10 }} />
-          <Typography variant="h5" component="div" sx={{ flexGrow: 1 }}>
-            {title}
-          </Typography>
-          <IconButton>
-            <WorkIcon color="primary" />
-          </IconButton>
-        </Box>
-        <Typography variant="body2" color="text.secondary" sx={{ marginTop: 1 }}>
-          {company} | {location}
-          {remoteFriendly && " | Remote Friendly"}
-        </Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ marginTop: 1 }}>
-          Заробітна Плата: {salary}
+    <Card sx={{ height: "100%", display: "flex", flexDirection: "column" }}>
+      <CardMedia component="img" sx={{ height: 60, width: 60, margin: '0 auto', objectFit: 'contain' }} image={logo} alt="Employer logo" />
+      <CardContent sx={{ flexGrow: 1 }}>
+        <Typography gutterBottom variant="h5" component="h2">
+          {title}
         </Typography>
         <Typography variant="body2" color="text.secondary">
-          Тип Зайнятості: {employmentType}
+          Роботодавець: {employer}
         </Typography>
-        <Typography variant="body2" color="text.primary" sx={{ marginTop: 2 }}>
-          {description}
+        <Typography variant="body2" color="text.secondary">
+          Місце роботи: {location}
         </Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ marginTop: 2 }}>
-          Теги: {tags.join(", ")}
+        <Typography variant="body2" color="text.secondary">
+          Заробітна плата: {salary}
         </Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ marginTop: 2 }}>
-          Дата: {formattedDate}
+        <Typography variant="body2" color="text.secondary">
+          Тип зайнятості: {employmentType}
+        </Typography>
+        <Typography variant="body2" color="text.secondary">
+          {responsibilities.substring(0, 60)}...
+        </Typography>
+        <Typography variant="body2" color="text.secondary">
+          Дата публікації: {new Date(postedDate).toLocaleDateString('uk-UA')}
         </Typography>
       </CardContent>
       <CardActions>
-        <Button size="small" component={Link} to={`/vacancies/${id}`}>
+        <Button component={RouterLink} to={`/vacancies/${id}`} color="secondary">
           Детальніше
-        </Button>
-        <Button size="small" color="primary">
-          Зберегти
         </Button>
       </CardActions>
     </Card>
