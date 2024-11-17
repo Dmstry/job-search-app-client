@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { VacancyCard } from "./VacancyCard";
 import { Container } from "@mui/system";
 import { Grid, Typography, CircularProgress } from "@mui/material";
@@ -11,10 +11,15 @@ export function Vacancies() {
   const [vacancies, setVacancies] = useState<Vacancy[]>([]);
   const [hasMore, setHasMore] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const initialFetchDone = useRef(false);
   const limit = 18;
 
   const fetchMoreVacancies = useCallback(async () => {
+    if (isLoading) return;
+
     try {
+      setIsLoading(true);
       const response = await getVacancies(page, limit);
 
       if (response.error) {
@@ -34,13 +39,16 @@ export function Vacancies() {
     } catch (error) {
       setError('Failed to fetch vacancies');
       setHasMore(false);
+    } finally {
+      setIsLoading(false);
     }
-  }, [page, limit]);
-
-  const loggedIn = true;
+  }, [page, limit, isLoading]);
 
   useEffect(() => {
-    fetchMoreVacancies();
+    if (!initialFetchDone.current) {
+      initialFetchDone.current = true;
+      fetchMoreVacancies();
+    }
   }, [fetchMoreVacancies]);
 
   if (error) {
@@ -61,7 +69,7 @@ export function Vacancies() {
       <InfiniteScroll
         dataLength={vacancies.length}
         next={fetchMoreVacancies}
-        hasMore={hasMore}
+        hasMore={hasMore && !isLoading}
         loader={<CircularProgress />}
         endMessage={<p style={{ textAlign: "center" }}>Більше вакансій немає</p>}
         style={{ overflow: "hidden" }}
@@ -78,7 +86,6 @@ export function Vacancies() {
                 salary={v.salary}
                 postedDate={v.postedDate}
                 responsibilities={v.responsibilities}
-                enableUserActions={loggedIn}
               />
             </Grid>
           ))}
