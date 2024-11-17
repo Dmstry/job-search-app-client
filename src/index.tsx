@@ -13,6 +13,7 @@ import { Vacancies } from './features/Vacancies/Vacancies';
 import { Provider } from 'react-redux';
 import { store } from './store';
 import { Resumes } from './features/Resumes/Resumes';
+import { VacancyDetails } from './features/Vacancies/VacancyDetails';
 
 const router = createBrowserRouter([
   {
@@ -30,6 +31,10 @@ const router = createBrowserRouter([
       {
         path: '/resumes',
         element: <Resumes />,
+      },
+      {
+        path: '/vacancies/:id',
+        element: <VacancyDetails />
       }
     ],
   },

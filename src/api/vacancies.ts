@@ -17,4 +17,16 @@ export const getVacancies = async (page: number, limit: number = 18): Promise<Ap
     }
     return { data: [], error: 'An unknown error occurred' };
   }
+};
+
+export const getVacancyById = async (id: string): Promise<ApiResponse<Vacancy | null>> => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}${ENDPOINTS.VACANCIES}/${id}`);
+    return { data: response.data };
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      return { data: null, error: error.message };
+    }
+    return { data: null, error: 'An unknown error occurred' };
+  }
 }; 
