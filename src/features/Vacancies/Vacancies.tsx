@@ -1,26 +1,28 @@
-import { useEffect, useState } from 'react';
-import { VacancyCard } from './VacancyCard';
-import { Container } from '@mui/system';
-import { Grid, Typography, CircularProgress } from '@mui/material';
-import InfiniteScroll from 'react-infinite-scroll-component';
-import axios from 'axios';
-import { Vacancy } from './vacanciesSlice';
+import { useEffect, useState, useCallback } from "react";
+import { VacancyCard } from "./VacancyCard";
+import { Container } from "@mui/system";
+import { Grid, Typography, CircularProgress } from "@mui/material";
+import InfiniteScroll from "react-infinite-scroll-component";
+import { getVacancies } from "../../api/vacancies";
+import { Vacancy } from "../../api/types";
 
 export function Vacancies() {
   const [page, setPage] = useState(1);
   const [vacancies, setVacancies] = useState<Vacancy[]>([]);
   const [hasMore, setHasMore] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const limit = 18;
 
-  const fetchMoreVacancies = async () => {
-    console.log(`Fetching page ${page}`);
+  const fetchMoreVacancies = useCallback(async () => {
     try {
-      const response = await axios.get('http://localhost:8001/api/vacancies', {
-        params: {
-          page,
-          limit,
-        },
-      });
+      const response = await getVacancies(page, limit);
+
+      if (response.error) {
+        setError(response.error);
+        setHasMore(false);
+        return;
+      }
+
       const newVacancies = response.data;
 
       if (newVacancies.length < limit) {
@@ -30,14 +32,26 @@ export function Vacancies() {
       setVacancies((prevVacancies) => [...prevVacancies, ...newVacancies]);
       setPage((prevPage) => prevPage + 1);
     } catch (error) {
-      console.error('Error fetching more vacancies:', error);
+      setError('Failed to fetch vacancies');
       setHasMore(false);
     }
-  };
+  }, [page, limit]);
+
+  const loggedIn = true;
 
   useEffect(() => {
     fetchMoreVacancies();
-  }, []);
+  }, [fetchMoreVacancies]);
+
+  if (error) {
+    return (
+      <Container>
+        <Typography color="error" align="center">
+          {error}
+        </Typography>
+      </Container>
+    );
+  }
 
   return (
     <Container sx={{ py: 8 }} maxWidth="lg">
@@ -49,8 +63,8 @@ export function Vacancies() {
         next={fetchMoreVacancies}
         hasMore={hasMore}
         loader={<CircularProgress />}
-        endMessage={<p style={{ textAlign: 'center' }}>Більше вакансій немає</p>}
-        style={{ overflow: 'hidden' }}
+        endMessage={<p style={{ textAlign: "center" }}>Більше вакансій немає</p>}
+        style={{ overflow: "hidden" }}
       >
         <Grid container spacing={4}>
           {vacancies.map((v: Vacancy) => (
@@ -64,6 +78,7 @@ export function Vacancies() {
                 salary={v.salary}
                 postedDate={v.postedDate}
                 responsibilities={v.responsibilities}
+                enableUserActions={loggedIn}
               />
             </Grid>
           ))}

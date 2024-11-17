@@ -1,25 +1,6 @@
-import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import axios from 'axios';
-
-export interface Vacancy {
-  title: any;
-  location: any;
-  employer: any;
-  _id: string;
-  titleDetails: {
-    shortName: string;
-  };
-  locationDetails: {
-    locality: string;
-  };
-  employerDetails: {
-    shortName: string;
-  };
-  employmentType: string;
-  salary: number;
-  postedDate: string;
-  responsibilities: string;
-}
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { getVacancies } from '../../api/vacancies';
+import { Vacancy } from '../../api/types';
 
 interface VacanciesState {
   loading: boolean;
@@ -33,11 +14,16 @@ const initialState: VacanciesState = {
   error: null,
 };
 
-// Асинхронний thunk для отримання вакансій з пагінацією
-export const fetchVacancies = createAsyncThunk('vacancies/fetchVacancies', async (page: number) => {
-  const response = await axios.get(`http://localhost:8001/api/vacancies/paginated?page=${page}&limit=18`);
-  return response.data;
-});
+export const fetchVacancies = createAsyncThunk(
+  'vacancies/fetchVacancies',
+  async (page: number) => {
+    const response = await getVacancies(page);
+    if (response.error) {
+      throw new Error(response.error);
+    }
+    return response.data;
+  }
+);
 
 const vacanciesSlice = createSlice({
   name: 'vacancies',
@@ -49,7 +35,7 @@ const vacanciesSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(fetchVacancies.fulfilled, (state, action: PayloadAction<Vacancy[]>) => {
+      .addCase(fetchVacancies.fulfilled, (state, action) => {
         state.loading = false;
         state.vacancies = [...state.vacancies, ...action.payload];
       })
