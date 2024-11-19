@@ -1,7 +1,8 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { VacancyCard } from "./VacancyCard";
 import { Container } from "@mui/system";
-import { Grid, Typography, CircularProgress } from "@mui/material";
+import { Grid, Typography, CircularProgress, Box, Button } from "@mui/material";
+import { Link as RouterLink } from "react-router-dom";
 import InfiniteScroll from "react-infinite-scroll-component";
 import { getVacancies } from "../../api/vacancies";
 import { Vacancy } from "../../api/types";
@@ -63,9 +64,19 @@ export function Vacancies() {
 
   return (
     <Container sx={{ py: 8 }} maxWidth="lg">
-      <Typography variant="h4" align="center" gutterBottom>
-        Актуальні вакансії
-      </Typography>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2, pt: 1 }}>
+        <Typography variant="h4" align="center" gutterBottom>
+          Актуальні вакансії
+        </Typography>
+        <Button
+          component={RouterLink}
+          to="/vacancies/create"
+          variant="contained"
+          color="primary"
+        >
+          Створити вакансію
+        </Button>
+      </Box>
       <InfiniteScroll
         dataLength={vacancies.length}
         next={fetchMoreVacancies}

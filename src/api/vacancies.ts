@@ -1,7 +1,9 @@
 import axios from 'axios';
 import { API_BASE_URL, ENDPOINTS } from './config';
 import { Vacancy, ApiResponse } from './types';
+import { FormInputs } from '../features/Vacancies/CreateVacancy';
 
+// Отримання списку вакансій
 export const getVacancies = async (page: number, limit: number = 18): Promise<ApiResponse<Vacancy[]>> => {
   try {
     const response = await axios.get(`${API_BASE_URL}${ENDPOINTS.VACANCIES}`, {
@@ -19,6 +21,7 @@ export const getVacancies = async (page: number, limit: number = 18): Promise<Ap
   }
 };
 
+// Отримання вакансії за ID
 export const getVacancyById = async (id: string): Promise<ApiResponse<Vacancy | null>> => {
   try {
     const response = await axios.get(`${API_BASE_URL}${ENDPOINTS.VACANCIES}/${id}`);
@@ -29,4 +32,22 @@ export const getVacancyById = async (id: string): Promise<ApiResponse<Vacancy | 
     }
     return { data: null, error: 'An unknown error occurred' };
   }
-}; 
+};
+
+// Створення нової вакансії
+export const createVacancy = async (formData: FormInputs): Promise<ApiResponse<Vacancy>> => {
+  try {
+    const vacancyData = {
+      ...formData,
+      postedDate: new Date().toISOString(),
+    };
+
+    const response = await axios.post(`${API_BASE_URL}${ENDPOINTS.VACANCIES}`, vacancyData);
+    return { data: response.data };
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw new Error(error.response?.data?.message || error.message);
+    }
+    throw new Error('An unknown error occurred');
+  }
+};
