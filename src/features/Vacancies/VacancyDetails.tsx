@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { getVacancyById } from '../../api/vacancies';
 import { Vacancy } from '../../api/types';
@@ -9,10 +9,13 @@ export function VacancyDetails() {
   const [vacancy, setVacancy] = useState<Vacancy | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const fetchInProgress = useRef(false);
 
   useEffect(() => {
     const fetchVacancy = async () => {
-      if (!id) return;
+      if (!id || fetchInProgress.current) return;
+
+      fetchInProgress.current = true;
 
       try {
         const response = await getVacancyById(id);
@@ -25,6 +28,7 @@ export function VacancyDetails() {
         setError('Failed to fetch vacancy details');
       } finally {
         setLoading(false);
+        fetchInProgress.current = false;
       }
     };
 

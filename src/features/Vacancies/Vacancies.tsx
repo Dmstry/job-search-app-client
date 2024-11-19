@@ -14,12 +14,15 @@ export function Vacancies() {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const initialFetchDone = useRef(false);
+  const fetchInProgress = useRef(false);
   const limit = 18;
+  const abortController = useRef<AbortController | null>(null);
 
   const fetchMoreVacancies = useCallback(async () => {
-    if (isLoading) return;
+    if (isLoading || fetchInProgress.current) return;
 
     try {
+      fetchInProgress.current = true;
       setIsLoading(true);
       const response = await getVacancies(page, limit);
 
@@ -31,17 +34,28 @@ export function Vacancies() {
 
       const newVacancies = response.data;
 
+      // Deduplicate vacancies based on _id
+      setVacancies(prevVacancies => {
+        const uniqueVacancies = [...prevVacancies];
+        newVacancies.forEach(newVacancy => {
+          if (!uniqueVacancies.some(v => v._id === newVacancy._id)) {
+            uniqueVacancies.push(newVacancy);
+          }
+        });
+        return uniqueVacancies;
+      });
+
       if (newVacancies.length < limit) {
         setHasMore(false);
       }
 
-      setVacancies((prevVacancies) => [...prevVacancies, ...newVacancies]);
-      setPage((prevPage) => prevPage + 1);
+      setPage(prevPage => prevPage + 1);
     } catch (error) {
       setError('Failed to fetch vacancies');
       setHasMore(false);
     } finally {
       setIsLoading(false);
+      fetchInProgress.current = false;
     }
   }, [page, limit, isLoading]);
 
@@ -51,6 +65,26 @@ export function Vacancies() {
       fetchMoreVacancies();
     }
   }, [fetchMoreVacancies]);
+
+  // Reset state when component unmounts
+  useEffect(() => {
+    return () => {
+      setVacancies([]);
+      setPage(1);
+      setHasMore(true);
+      setError(null);
+      initialFetchDone.current = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    const controller = abortController.current;
+    return () => {
+      if (controller) {
+        controller.abort();
+      }
+    };
+  }, []);
 
   if (error) {
     return (

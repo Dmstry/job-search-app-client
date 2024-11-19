@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm, Controller } from "react-hook-form";
 import {
@@ -18,6 +18,7 @@ import {
   Switch,
   FormControlLabel,
   FormGroup,
+  Autocomplete,
 } from "@mui/material";
 import axios from "axios";
 import { API_BASE_URL } from "../../api/config";
@@ -48,9 +49,9 @@ export interface FormInputs {
   responsibilities: string;
   educationRequirements: string;
   hasHigherEducation: boolean;
-  educationDegree?: string;
+  educationDegree?: string | null;
   hasExperience: boolean;
-  experience: string;
+  experience?: string | null;
   contactDetails: {
     phone: string;
     email: string;
@@ -78,20 +79,22 @@ export function CreateVacancy() {
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
+  const fetchInProgress = useRef(false);
+
   const { control, handleSubmit, watch, formState: { errors } } = useForm<FormInputs>({
     defaultValues: {
-      title: "", // Додайте початкове значення
+      title: "",
       employer: "",
       location: "",
       employmentType: "",
       salary: 0,
-      schedule: "", // Додайте початкове значення
+      schedule: "",
       responsibilities: "",
       educationRequirements: "",
       hasHigherEducation: false,
-      educationDegree: "", // Додайте початкове значення
+      educationDegree: "",
       hasExperience: false,
-      experience: "", // Додайте початкове значення
+      experience: "",
       active: true,
       contactDetails: {
         phone: "",
@@ -106,6 +109,9 @@ export function CreateVacancy() {
 
   useEffect(() => {
     const fetchReferenceData = async () => {
+      if (fetchInProgress.current) return; // Перевіряємо, чи запит вже виконується
+      fetchInProgress.current = true; // Встановлюємо статус виконання запиту
+
       try {
         const [positionsRes, employersRes, localitiesRes] = await Promise.all([
           axios.get(`${API_BASE_URL}/positions`),
@@ -120,6 +126,7 @@ export function CreateVacancy() {
         setSubmitError("Failed to load reference data");
       } finally {
         setLoading(false);
+        fetchInProgress.current = false; // Скидаємо статус виконання запиту
       }
     };
 
@@ -127,8 +134,14 @@ export function CreateVacancy() {
   }, []);
 
   const onSubmit = async (data: FormInputs) => {
+    const transformedData = {
+      ...data,
+      educationDegree: data.hasHigherEducation ? data.educationDegree : null,
+      experience: data.hasExperience ? data.experience : null,
+    };
+
     try {
-      const response = await createVacancy(data);
+      const response = await createVacancy(transformedData as FormInputs);
       if (response.error) {
         setSubmitError(response.error);
         return;
@@ -138,11 +151,10 @@ export function CreateVacancy() {
         navigate("/vacancies");
       }, 2000);
     } catch (error) {
-      setSubmitError(
-        error instanceof Error ? error.message : "Failed to create vacancy"
-      );
+      setSubmitError("Failed to create vacancy");
     }
   };
+
 
 
   if (loading) {
@@ -165,17 +177,22 @@ export function CreateVacancy() {
                 control={control}
                 rules={{ required: "Оберіть посаду" }}
                 render={({ field }) => (
-                  <FormControl fullWidth error={!!errors.title}>
-                    <InputLabel>Посада</InputLabel>
-                    <Select {...field} label="Посада">
-                      {positions.map((position) => (
-                        <MenuItem key={position._id} value={position._id}>
-                          {position.name}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                    {errors.title && <FormHelperText>{errors.title.message}</FormHelperText>}
-                  </FormControl>
+                  <Autocomplete
+                    {...field}
+                    value={positions.find(p => p._id === field.value) || null}
+                    options={positions}
+                    getOptionLabel={(option) => option.name || ""}
+                    isOptionEqualToValue={(option, value) => option._id === value._id}
+                    onChange={(_, value) => field.onChange(value?._id || "")}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        label="Посада"
+                        error={!!errors.title}
+                        helperText={errors.title?.message}
+                      />
+                    )}
+                  />
                 )}
               />
             </Grid>
@@ -187,17 +204,22 @@ export function CreateVacancy() {
                 control={control}
                 rules={{ required: "Оберіть роботодавця" }}
                 render={({ field }) => (
-                  <FormControl fullWidth error={!!errors.employer}>
-                    <InputLabel>Роботодавець</InputLabel>
-                    <Select {...field} label="Роботодавець">
-                      {employers.map((employer) => (
-                        <MenuItem key={employer._id} value={employer._id}>
-                          {employer.name}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                    {errors.employer && <FormHelperText>{errors.employer.message}</FormHelperText>}
-                  </FormControl>
+                  <Autocomplete
+                    {...field}
+                    value={employers.find(e => e._id === field.value) || null}
+                    options={employers}
+                    getOptionLabel={(option) => option.name || ""}
+                    isOptionEqualToValue={(option, value) => option._id === value._id}
+                    onChange={(_, value) => field.onChange(value?._id || "")}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        label="Роботодавець"
+                        error={!!errors.employer}
+                        helperText={errors.employer?.message}
+                      />
+                    )}
+                  />
                 )}
               />
             </Grid>
@@ -209,17 +231,22 @@ export function CreateVacancy() {
                 control={control}
                 rules={{ required: "Оберіть місце виконання робіт" }}
                 render={({ field }) => (
-                  <FormControl fullWidth error={!!errors.location}>
-                    <InputLabel>Місце виконання робіт</InputLabel>
-                    <Select {...field} label="Місце виконання робіт">
-                      {localities.map((locality) => (
-                        <MenuItem key={locality._id} value={locality._id}>
-                          {locality.name}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                    {errors.location && <FormHelperText>{errors.location.message}</FormHelperText>}
-                  </FormControl>
+                  <Autocomplete
+                    {...field}
+                    value={localities.find(l => l._id === field.value) || null}
+                    options={localities}
+                    getOptionLabel={(option) => option.name || ""}
+                    isOptionEqualToValue={(option, value) => option._id === value._id}
+                    onChange={(_, value) => field.onChange(value?._id || "")}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        label="Місце виконання робіт"
+                        error={!!errors.location}
+                        helperText={errors.location?.message}
+                      />
+                    )}
+                  />
                 )}
               />
             </Grid>
