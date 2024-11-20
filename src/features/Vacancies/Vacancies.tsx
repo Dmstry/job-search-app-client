@@ -4,8 +4,9 @@ import { Container } from "@mui/system";
 import { Grid, Typography, CircularProgress, Box, Button } from "@mui/material";
 import { Link as RouterLink } from "react-router-dom";
 import InfiniteScroll from "react-infinite-scroll-component";
-import { getVacancies } from "../../api/vacancies";
+import { getVacancies, VacancySorts } from "../../api/vacancies";
 import { Vacancy } from "../../api/types";
+import { VacancySortsComponent } from "./VacancySorts";
 
 export function Vacancies() {
   const [page, setPage] = useState(1);
@@ -13,78 +14,63 @@ export function Vacancies() {
   const [hasMore, setHasMore] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const initialFetchDone = useRef(false);
+  const [sorts, setSorts] = useState<VacancySorts>({});
   const fetchInProgress = useRef(false);
+  const initialSortRef = useRef(false);
   const limit = 18;
-  const abortController = useRef<AbortController | null>(null);
 
-  const fetchMoreVacancies = useCallback(async () => {
-    if (isLoading || fetchInProgress.current) return;
+  const fetchMoreVacancies = useCallback(
+    async (reset = false) => {
+      if (isLoading || fetchInProgress.current) return;
 
-    try {
-      fetchInProgress.current = true;
-      setIsLoading(true);
-      const response = await getVacancies(page, limit);
+      try {
+        fetchInProgress.current = true;
+        setIsLoading(true);
 
-      if (response.error) {
-        setError(response.error);
+        const response = await getVacancies(reset ? 1 : page, limit, sorts);
+
+        if (response.error) {
+          setError(response.error);
+          setHasMore(false);
+          return;
+        }
+
+        const newVacancies = response.data;
+
+        setVacancies((prevVacancies) =>
+          reset ? newVacancies : [...prevVacancies, ...newVacancies]
+        );
+
+        if (newVacancies.length < limit) {
+          setHasMore(false);
+        }
+
+        setPage((prevPage) => (reset ? 2 : prevPage + 1));
+      } catch (error) {
+        setError("Failed to fetch vacancies");
         setHasMore(false);
-        return;
+      } finally {
+        setIsLoading(false);
+        fetchInProgress.current = false;
       }
-
-      const newVacancies = response.data;
-
-      // Deduplicate vacancies based on _id
-      setVacancies(prevVacancies => {
-        const uniqueVacancies = [...prevVacancies];
-        newVacancies.forEach(newVacancy => {
-          if (!uniqueVacancies.some(v => v._id === newVacancy._id)) {
-            uniqueVacancies.push(newVacancy);
-          }
-        });
-        return uniqueVacancies;
-      });
-
-      if (newVacancies.length < limit) {
-        setHasMore(false);
-      }
-
-      setPage(prevPage => prevPage + 1);
-    } catch (error) {
-      setError('Failed to fetch vacancies');
-      setHasMore(false);
-    } finally {
-      setIsLoading(false);
-      fetchInProgress.current = false;
-    }
-  }, [page, limit, isLoading]);
+    },
+    [page, limit, sorts, isLoading]
+  );
 
   useEffect(() => {
-    if (!initialFetchDone.current) {
-      initialFetchDone.current = true;
-      fetchMoreVacancies();
+    if (!initialSortRef.current) {
+      initialSortRef.current = true;
+      fetchMoreVacancies(true);
     }
   }, [fetchMoreVacancies]);
 
-  // Reset state when component unmounts
   useEffect(() => {
-    return () => {
-      setVacancies([]);
-      setPage(1);
-      setHasMore(true);
-      setError(null);
-      initialFetchDone.current = false;
-    };
-  }, []);
+    fetchMoreVacancies(true);
+  }, [sorts]);
 
-  useEffect(() => {
-    const controller = abortController.current;
-    return () => {
-      if (controller) {
-        controller.abort();
-      }
-    };
-  }, []);
+  const handleSortChange = (updatedSorts: VacancySorts) => {
+    setSorts(updatedSorts);
+  };
 
   if (error) {
     return (
@@ -98,22 +84,18 @@ export function Vacancies() {
 
   return (
     <Container sx={{ py: 8 }} maxWidth="lg">
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2, pt: 1 }}>
+      <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2, pt: 1 }}>
         <Typography variant="h4" align="center" gutterBottom>
           Актуальні вакансії
         </Typography>
-        <Button
-          component={RouterLink}
-          to="/vacancies/create"
-          variant="contained"
-          color="primary"
-        >
+        <VacancySortsComponent sorts={sorts} onSortsChange={handleSortChange} />
+        <Button component={RouterLink} to="/vacancies/create" variant="contained" color="primary">
           Створити вакансію
         </Button>
       </Box>
       <InfiniteScroll
         dataLength={vacancies.length}
-        next={fetchMoreVacancies}
+        next={() => fetchMoreVacancies(false)}
         hasMore={hasMore && !isLoading}
         loader={<CircularProgress />}
         endMessage={<p style={{ textAlign: "center" }}>Більше вакансій немає</p>}

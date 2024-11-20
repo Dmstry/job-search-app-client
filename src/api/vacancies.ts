@@ -3,13 +3,18 @@ import { API_BASE_URL, ENDPOINTS } from './config';
 import { Vacancy, ApiResponse } from './types';
 import { FormInputs } from '../features/Vacancies/CreateVacancy';
 
+export interface VacancySorts {
+  sort?: 'date_asc' | 'date_desc' | 'salary_asc' | 'salary_desc';
+}
+
 // Отримання списку вакансій
-export const getVacancies = async (page: number, limit: number = 18): Promise<ApiResponse<Vacancy[]>> => {
+export const getVacancies = async (page: number, limit: number = 18, sorts?: VacancySorts): Promise<ApiResponse<Vacancy[]>> => {
   try {
     const response = await axios.get(`${API_BASE_URL}${ENDPOINTS.VACANCIES}`, {
       params: {
         page,
         limit,
+        ...sorts,
       },
     });
     return { data: response.data };
