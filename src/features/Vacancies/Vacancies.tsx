@@ -83,15 +83,29 @@ export function Vacancies() {
   }
 
   return (
-    <Container sx={{ py: 8 }} maxWidth="lg">
-      <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2, pt: 1 }}>
-        <Typography variant="h4" align="center" gutterBottom>
-          Актуальні вакансії
-        </Typography>
-        <VacancySortsComponent sorts={sorts} onSortsChange={handleSortChange} />
-        <Button component={RouterLink} to="/vacancies/create" variant="contained" color="primary">
-          Створити вакансію
-        </Button>
+    <Container sx={{ py: 8, overflow: "visible" }} maxWidth="lg">
+      <Box
+        sx={{
+          position: "sticky",
+          top: { xs: "56px", sm: "64px" }, // Відступ, враховуючи висоту AppBar
+          zIndex: 1100,
+          backgroundColor: "white",
+          py: 1,
+          mb: 2,
+          borderBottom: "1px solid #e0e0e0",
+        }}
+      >
+        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <Typography variant="h4" sx={{ whiteSpace: "nowrap", mr: 2 }}>
+            Актуальні вакансії
+          </Typography>
+          <Box sx={{ display: "flex", gap: 2, flex: 1, justifyContent: "center" }}>
+            <VacancySortsComponent sorts={sorts} onSortsChange={handleSortChange} />
+          </Box>
+          <Button component={RouterLink} to="/vacancies/create" variant="contained" color="primary">
+            Створити вакансію
+          </Button>
+        </Box>
       </Box>
       <InfiniteScroll
         dataLength={vacancies.length}
@@ -119,5 +133,7 @@ export function Vacancies() {
         </Grid>
       </InfiniteScroll>
     </Container>
+
+
   );
 }
