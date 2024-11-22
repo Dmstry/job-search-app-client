@@ -15,14 +15,14 @@ export function VacancySortsComponent({ sorts, onSortsChange }: VacancySortsProp
   };
 
   return (
-    <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+    <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
       {/* Лейбел для сортування */}
       <Typography variant="subtitle1" sx={{ whiteSpace: "nowrap" }}>
         Сортувати за:
       </Typography>
 
       {/* Сортування за датою */}
-      <FormControl size="small" sx={{ minWidth: 150 }}>
+      <FormControl size="small" sx={{ minWidth: 130 }}>
         <InputLabel>датою</InputLabel>
         <Select
           value={sorts.sort === "date_asc" || sorts.sort === "date_desc" ? sorts.sort : ""}
@@ -35,7 +35,7 @@ export function VacancySortsComponent({ sorts, onSortsChange }: VacancySortsProp
       </FormControl>
 
       {/* Сортування за зарплатою */}
-      <FormControl size="small" sx={{ minWidth: 150 }}>
+      <FormControl size="small" sx={{ minWidth: 130 }}>
         <InputLabel>зарплатою</InputLabel>
         <Select
           value={sorts.sort === "salary_asc" || sorts.sort === "salary_desc" ? sorts.sort : ""}

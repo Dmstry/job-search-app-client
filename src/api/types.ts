@@ -33,4 +33,4 @@ export interface Vacancy {
 export interface ApiResponse<T> {
   data: T;
   error?: string;
-} 
+}
