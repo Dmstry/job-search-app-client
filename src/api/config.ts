@@ -1,4 +1,4 @@
-export const API_BASE_URL = "http://localhost:8001/api";
+export const API_BASE_URL = "https://job-search-back-584ce7ec1da2.herokuapp.com";
 
 export const ENDPOINTS = {
   VACANCIES: "/vacancies",
